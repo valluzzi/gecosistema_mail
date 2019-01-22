@@ -31,7 +31,7 @@ from gecosistema_core import *
 # -------------------------------------------------------------------------------
 #   mailto
 # -------------------------------------------------------------------------------
-def system_mail(dest, Body="", Subject=None, fileconf="mail.conf"):
+def system_mail(dest, Body="", Subject=None, fileconf="mail.conf", verbose=False):
     if isstring(dest):
         receivers = dest.split(",")
     if not Subject:
@@ -58,6 +58,8 @@ def system_mail(dest, Body="", Subject=None, fileconf="mail.conf"):
             mailServer.login(username, password)
             mailServer.sendmail(username, receivers, msg.as_string())
             mailServer.close()
+            if verbose:
+                print("Sending mail to <%s>"%(msg['To']))
         except smtplib.SMTPException as ex:
             print(ex)
 
