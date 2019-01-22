@@ -1,6 +1,6 @@
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Licence:
-# Copyright (c) 2012-2019 Valerio for Gecosistema S.r.l.
+# Copyright (c) 2012-2019 Luzzi Valerio
 #
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
@@ -15,16 +15,59 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 #
-# Name:        module.py
+# Name:        mail.py
 # Purpose:
 #
 # Author:      Luzzi Valerio
 #
-# Created:
-#-------------------------------------------------------------------------------
+# Created:     12/03/2013
+# -------------------------------------------------------------------------------
+import smtplib, json
+from smtplib import SMTP_SSL as SMTP
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
+from gecosistema_core import *
 
+# -------------------------------------------------------------------------------
+#   mailto
+# -------------------------------------------------------------------------------
+def system_mail(dest, Body="", Subject=None, fileconf="mail.conf"):
+    if isstring(dest):
+        receivers = dest.split(",")
+    if not Subject:
+        Subject = Body[:16] + "[...]"
+
+    if fileconf and isfile(fileconf):
+        conf = {}
+        text = filetostr(fileconf)
+        conf = json.loads(text)
+        server = conf["server"] if "server" in conf else ""
+        username = conf["username"] if "username" in conf else ""
+        password = conf["password"] if "password" in conf else ""
+        port = int(conf["port"]) if "port" in conf else 465
+
+        msg = MIMEMultipart()
+        msg['From'] = username
+        msg['To'] = ",".join(receivers)
+        msg['Subject'] = Subject
+        msg.attach(MIMEText(Body))
+
+        try:
+            # mailServer = smtplib.SMTP('smtp.gmail.com', 587)
+            mailServer = SMTP(server, port)
+            mailServer.login(username, password)
+            mailServer.sendmail(username, receivers, msg.as_string())
+            mailServer.close()
+        except smtplib.SMTPException as ex:
+            print(ex)
+
+
+# -------------------------------------------------------------------------------
+#   main
+# -------------------------------------------------------------------------------
 def main():
-    pass
+    system_mail("valerio.luzzi@gecosistema.it", "This is a test smtplib message.")
+
 
 if __name__ == '__main__':
     main()
